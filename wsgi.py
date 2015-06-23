@@ -361,7 +361,7 @@ class Hello(object):
     #@+node:2015.20150330144929.1765: *3* mygeartest
     @cherrypy.expose
     # N 為齒數, M 為模數, P 為壓力角
-    def mygeartest(self, n1=15, n2=24,M=15, P=15):
+    def mygeartest(self, n1=15, n2=24,n3=15,n4=24,M=15, P=15):
         outstring = '''
     <!DOCTYPE html> 
     <html>
@@ -376,7 +376,7 @@ class Hello(object):
     <body onload="brython()">
 
     <form method=POST action=mygeartest>
-    齒數1:<br />
+    齒數1 and 3:<br />
         <select name="n1">
         '''
         for j in range(15,81):
@@ -384,7 +384,7 @@ class Hello(object):
         outstring+='''
        </select><br/>
 
-    齒數2:<br />
+    齒數2 and 4:<br />
         <select name="n2">
         '''
         for k in range(15,81):
@@ -393,6 +393,7 @@ class Hello(object):
        </select><br/>
     <input type=submit value=send>
     </form>
+
 
     <!-- 以下為 canvas 畫圖程式 -->
     <script type="text/python">
@@ -409,7 +410,7 @@ class Hello(object):
     # 以下利用 spur.py 程式進行繪圖, 接下來的協同設計運算必須要配合使用者的需求進行設計運算與繪圖
     # 其中並將工作分配給其他組員建立類似 spur.py 的相關零件繪圖模組
     # midx, midy 為齒輪圓心座標, rp 為節圓半徑, n 為齒數, pa 為壓力角, color 為線的顏色
-    # Gear(midx, midy, rp, n=20, pa=20, color="black"):
+    # Gear(midx, midy, rp, m=20, pa=20, color="black"):
     # 模數決定齒的尺寸大小, 囓合齒輪組必須有相同的模數與壓力角
     # 壓力角 pa 單位為角度
     pa = '''+str(P)+'''
@@ -419,15 +420,27 @@ class Hello(object):
     n_g1 = '''+str(n1)+'''
     # 第2齒輪齒數
     n_g2 = '''+str(n2)+'''
+    # 第3齒輪齒數
+    n_g3 = '''+str(n1)+'''
+    # 第4齒輪齒數
+    n_g4 = '''+str(n2)+'''
     # 計算兩齒輪的節圓半徑
     rp_g1 = m*n_g1/2
     rp_g2 = m*n_g2/2
+    rp_g3 = m*n_g1/2
+    rp_g4 = m*n_g2/2
     # 繪圖第1齒輪的圓心座標
     x_g1 = 200
     y_g1 = 200
     # 第2齒輪的圓心座標, 假設排列成水平, 表示各齒輪圓心 y 座標相同
     x_g2 = x_g1
     y_g2 = y_g1 + rp_g1 + rp_g2
+    # 第3齒輪的圓心座標
+    x_g3 = x_g1 + rp_g1 + rp_g2 
+    y_g3 = y_g1 + rp_g1 + rp_g2 
+    # 第4齒輪的圓心座標
+    x_g4 = x_g3
+    y_g4 = y_g3 + rp_g1 + rp_g2 
     # 將第1齒輪順時鐘轉 90 度
     # 使用 ctx.save() 與 ctx.restore() 以確保各齒輪以相對座標進行旋轉繪圖
     ctx.save()
@@ -445,10 +458,32 @@ class Hello(object):
     # translate to the origin of second gear
     ctx.translate(x_g2, y_g2)
     # rotate to engage
-    ctx.rotate(-pi/2+(pi/n_g2))
+    ctx.rotate(-pi/n_g2)
     # put it back
     ctx.translate(-x_g2, -y_g2)
     spur.Spur(ctx).Gear(x_g2, y_g2, rp_g2, n_g2, pa, "black")
+    ctx.restore()
+    # 將第三齒輪順時鐘轉 90 度
+    # 使用 ctx.save() 與 ctx.restore() 以確保各齒輪以相對座標進行旋轉繪圖
+    ctx.save()
+    # translate to the origin of second gear
+    ctx.translate(x_g3, y_g3)
+    # rotate to engage
+    ctx.rotate(-pi/2-pi/n_g3+(pi/2+pi/n_g2)*n_g2/n_g3)
+    # put it back
+    ctx.translate(-x_g3, -y_g3)
+    spur.Spur(ctx).Gear(x_g3, y_g3, rp_g3, n_g3, pa, "blue")
+    ctx.restore()
+
+    # 將第四齒輪逆時鐘轉 90 度之後, 再多轉一齒, 以便與第1齒輪進行囓合
+    ctx.save()
+    # translate to the origin of second gear
+    ctx.translate(x_g4, y_g4)
+    # rotate to engage
+    ctx.rotate(-pi/n_g4+(-pi/2+pi/n_g3)*n_g3/n_g4-(pi/2+pi/n_g2)*n_g2/n_g4)
+    # put it back
+    ctx.translate(-x_g4, -y_g4)
+    spur.Spur(ctx).Gear(x_g4, y_g4, rp_g4, n_g4, pa, "black")
     ctx.restore()
 
     </script>
